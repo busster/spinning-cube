@@ -32,7 +32,8 @@ const Cube = function(x, y, z, size) {
     {points: [4, 7, 6, 5], color: '#82b1ff', shipbobPoints: [17,18,19]}         // Pink   '#ff4ced'
   ]
   const OFFSET = 100
-  const INSET = 25
+  const INSET = 30
+  const INSET2 = 40
   this.lineTime = 0
   this.shipbobLogoPoints = [
     new Point3(x + size - INSET, y - size, z - size + OFFSET),  // 1
@@ -41,9 +42,9 @@ const Cube = function(x, y, z, size) {
     new Point3(x - size + INSET, y - size, z - size + INSET),   // 0
     new Point3(x + size - INSET, y - size, z - size + INSET),   // 1
     new Point3(x + size - INSET, y - size, z - size),           // 1
-    new Point3(x + size - INSET, y + size - INSET, z - size),   // 2
-    new Point3(x - size, y + size - INSET, z - size),           // 3
-    new Point3(x - size, y + size - INSET, z + size - INSET),   // 7
+    new Point3(x + size - INSET, y + size - INSET2, z - size),   // 2
+    new Point3(x - size, y + size - INSET2, z - size),           // 3
+    new Point3(x - size, y + size - INSET2, z + size - INSET),   // 7
     new Point3(x - size, y - size + OFFSET, z + size - INSET),  // 4
 
     new Point3(x + size - OFFSET, y + size, z - size + INSET),  // 2
@@ -52,9 +53,9 @@ const Cube = function(x, y, z, size) {
     new Point3(x + size - INSET, y + size, z + size - INSET),   // 6
     new Point3(x + size - INSET, y + size, z - size + INSET),   // 2
     new Point3(x + size, y + size, z - size + INSET),           // 2
-    new Point3(x + size, y - size + INSET, z - size + INSET),   // 1
-    new Point3(x + size, y - size + INSET, z + size),           // 5
-    new Point3(x - size + INSET, y - size + INSET, z + size),   // 4
+    new Point3(x + size, y - size + INSET2, z - size + INSET),   // 1
+    new Point3(x + size, y - size + INSET2, z + size),           // 5
+    new Point3(x - size + INSET, y - size + INSET2, z + size),   // 4
     new Point3(x - size + INSET, y + size - OFFSET, z + size),  // 7
     
   ]
@@ -110,7 +111,10 @@ Cube.prototype = {
       let v2 = new Point3(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z)
       let n  = new Point3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x)
       // if (false) {
-      if (-p1.x * n.x + -p1.y * n.y + -p1.z * n.z <= 0) {
+
+      let normal = -p1.x * n.x + -p1.y * n.y + -p1.z * n.z
+      let ISOOFFSET = 4000000 // when projecting to iso the cube is still rendering when in real life you wouldnt see it. this seems to be the magic number...
+      if (normal - ISOOFFSET <= 0) {
         context.strokeStyle = '#ffff'
         context.lineWidth = 5
         context.lineCap = 'round'
@@ -194,10 +198,14 @@ function normalize (max1,min1) {
 
 const projectPoints = (fl) => (points3, width, height) => {
   const points2 = []
+  // debugger
   for (let index = points3.length - 1; index > -1; -- index) {
     let p = points3[index]
-    let x = p.x * (fl / p.z) + width * 0.5
-    let y = p.y * (fl / p.z) + height * 0.5
+    // let x = p.x * (fl / p.z) + width * 0.5
+    // let y = p.y * (fl / p.z) + height * 0.5
+    // ISO??? -- ignore the z coords and project directly?
+    let x = p.x + width * 0.5
+    let y = p.y + height * 0.5
     points2[index] = new Point2(x, y)
   }
   return points2
@@ -219,7 +227,7 @@ const drawLoop = () => {
   cube.rotY(-pointer.x * 0.05)
   cube.draw()
 
-  // flip()
+  flip()
 }
 
 let context = document.querySelector('canvas').getContext('2d')
